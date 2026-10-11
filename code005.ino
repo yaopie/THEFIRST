@@ -5,8 +5,10 @@ Servo Base,fArm,rArm,Claw;
 //int Datacmd;//获取转动的角度状态
 int DSD;//舵机运行速度
 int mode;
+unsigned long lastTime;
+int midPos;
 //范围常量
-const int moveStep = 1;
+const int moveStep = 10;
 const int BaseMin = 0;
 const int BaseMax = 180;
 const int fArmMin = 33;
@@ -75,7 +77,7 @@ void armDatacmd()
       temp = rArm;
       //speedData(rArm);
       break;
-      case 'c':
+      case 'w':
       // speedData = ClawPos;
       // ClawPos = Datacmd;
       Serial.print("set ClawPos value:");
@@ -120,46 +122,55 @@ void joyStickDatacmd()//跟Arm给出要调整到的角度数值不同，这里�
 {
   switch(Serialcmd1)
   {
-    case 'A'
+    case 'A':
     temp = Claw;                    
     readData();
     Datacmd1 = fromData + moveStep;
     speedData();
-    case 'a'
+    break;
+    case 'a':
     temp = Claw;                    
     readData();
     Datacmd1 = fromData - moveStep;
     speedData();
-    case 'B'
+    break;
+    case 'B':
     temp = Base;                    
     readData();
     Datacmd1 = fromData + moveStep;
     speedData();
-    case 'b'
+    //Serial.println("OK");
+    break;
+    case 'b':
     temp = Base;                    
     readData();
     Datacmd1 = fromData - moveStep;
     speedData();
-    case 'C'
+    break;
+    case 'C':
     temp = fArm;                    
     readData();
     Datacmd1 = fromData + moveStep;
     speedData();
-    case 'c'
+    break;
+    case 'c':
     temp = fArm;                    
     readData();
     Datacmd1 = fromData - moveStep;
     speedData();
-    case 'D'
+    break;
+    case 'D':
     temp = rArm;                    
     readData();
     Datacmd1 = fromData + moveStep;
     speedData();
-    case 'd'
+    break;
+    case 'd':
     temp = rArm;                    
     readData();
     Datacmd1 = fromData - moveStep;
     speedData();
+    break;
   }
   }
 }arm;
@@ -171,7 +182,7 @@ void reSet()
         {'x',90,DSD},
         {'y',90,DSD},
         {'z',90,DSD},
-        {'c',65,DSD}
+        {'w',65,DSD}
       };
       for(int i = 0;i < 4;i++)
       {
@@ -185,13 +196,13 @@ void reSet()
 }
 void setup() {
   // put your setup code here, to run once:
-  Base.attach(10);
+  Base.attach(11);
   delay(100);
-  fArm.attach(11);
+  fArm.attach(10);
   delay(100);
-  rArm.attach(3);
+  rArm.attach(9);
   delay(100);
-  Claw.attach(6);
+  Claw.attach(5);
   delay(100);
   Serial.begin(9600);
   Serial.println("begin to test");
@@ -241,7 +252,7 @@ void Judcmd()
   {
     arm.Serialcmd1 = Serial.read();
     Serial.println(arm.Serialcmd1);
-    if(arm.Serialcmd1 == 'x'||arm.Serialcmd1 == 'y'||arm.Serialcmd1 == 'z'||arm.Serialcmd1 =='c')
+    if(arm.Serialcmd1 == 'x'||arm.Serialcmd1 == 'y'||arm.Serialcmd1 == 'z'||arm.Serialcmd1 =='w')
     {
       arm.Datacmd1 = Serial.parseInt();
       Serial.println(arm.Datacmd1);
@@ -251,9 +262,9 @@ void Judcmd()
       arm.armDatacmd();
     }
     else if(arm.Serialcmd1 == ','){}
-    else if(arm.Serialcmd1 == 'A'||arm.Serialcmd1 == 'a'||arm.Serialcmd1 == 'B'||arm.Serialcmd1 =='b')
+    else if(arm.Serialcmd1 == 'A'||arm.Serialcmd1 == 'a'||arm.Serialcmd1 == 'B'||arm.Serialcmd1 =='b'||arm.Serialcmd1 == 'C'||arm.Serialcmd1 == 'c'||arm.Serialcmd1 == 'D'||arm.Serialcmd1 == 'd')
     {
-      Serial.println("OK");
+      arm.DSD1 = 0;
       arm.joyStickDatacmd();
     }
     else{

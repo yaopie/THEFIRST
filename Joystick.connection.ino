@@ -5,7 +5,9 @@ int mode;
 int buttonState = HIGH;           // 当前稳定状态
 int lastButtonState = HIGH;       // 上一次读取的状态
 unsigned long lastDebounceTime = 0; // 上一次状态变化的时间
-unsigned long debounceDelay = 50;   // 去抖时间（毫秒）
+const int debounceDelay = 40;   // 去抖时间（毫秒）
+unsigned long lastTime = 0; 
+const int DSD = 60;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
@@ -18,14 +20,11 @@ void loop() {
   int reading = digitalRead(2);
   x = analogRead(A0);
   y = analogRead(A1);
-  // 如果读取的状态和上次不同（说明有变化）
-  if (reading != lastButtonState) 
-  {
-    lastDebounceTime = millis(); // 重置去抖计时器
-  }
   Serial.print(x);
   Serial.print(',');
   Serial.println(y);
+  // 如果读取的状态和上次不同（说明有变化）
+  if (reading != lastButtonState) lastDebounceTime = millis(); // 重置去抖计时器
   if ((millis() - lastDebounceTime) > debounceDelay) {
     // 且稳定的状态和记录的当前状态不同，说明确实改变了
     if (reading != buttonState) {
@@ -38,42 +37,26 @@ void loop() {
     }
   }
   lastButtonState = reading; 
-  if (mode == 1)
+   if (millis() - lastTime >= DSD) 
   {
-  if(x <= 256)
+  lastTime = millis();
+  switch (mode)
   {
-    mySerial.print('C');
-  }
-  else
+  case 1:
+  if(x <= 256) mySerial.print('C');
+  else if(x >= 768) mySerial.print('c');
+  if(y <= 256) 
   {
-    mySerial.print('c');
+  mySerial.print('D');
   }
-  if(y <= 256)
-  {
-    mySerial.print('D');
+  else if(y >= 768) mySerial.print('d');
+  break;
+  case 0:
+  if(x <= 256) mySerial.print('A');
+  else if(x >= 768) mySerial.print('a');
+  if(y <= 256) mySerial.print('B');
+  else if(y >= 768) mySerial.print('b');
+  break;
   }
-  else
-  {
-    mySerial.print('d');
-  }
-  }
-  else
-  {
-  if(x <= 256)
-  {
-    mySerial.print('A');
-  }
-  else
-  {
-    mySerial.print('a');
-  }
-  if(y <= 256)
-  {
-    mySerial.print('B');
-  }
-  else
-  {
-    mySerial.print('b');
-  }
-  }
+}
 }
